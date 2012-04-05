@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 DATABASE = "hn.db"
 FLUX = "flux.xml"
-SITE = "http://louisroche.net/docs"
+SITE = "http://docs.khady.info"
 
 def date_internet(date):
     d = date.strftime('%Y-%m-%dT%H:%M:%S%z')
@@ -35,7 +35,6 @@ class HackerNewest:
         self.url = 'http://news.ycombinator.com/newest'
         self.surl = 'http://news.ycombinator.com'
         self.page = ""
-        self.links = []
 
     def get_page(self):
         """fetch page
@@ -51,22 +50,25 @@ class HackerNewest:
         soup = BeautifulSoup(self.page)
         vote = 0
         infos = []
+        links = []
         for link in soup.find_all('a'):
             l = link['href']
             if l.startswith('vote'):
                 vote = 1
             elif vote == 1:
+                if l.startswith("item"):
+                    l = "%s/%s" % (self.surl, l)
                 infos = [jinja2.Markup.escape(link.string),
-                         jinja2.Markup.escape(l),
+                         jinja2.Markup.escape(l.strip()),
                          date_internet(datetime.datetime.now())]
                 time.sleep(1)
                 vote = 2
             elif l.startswith('item') and vote == 2:
                 infos.append("%s/%s" % (self.surl, l))
                 infos.append(uuid.uuid3(uuid.NAMESPACE_DNS, infos[1]))
-                self.links.append(infos)
+                links.append(infos)
                 vote = 0
-        return self.links
+        return links
 
 class ArchiveLinks:
     """archive every links into a sqlite database
@@ -101,7 +103,7 @@ if __name__ == '__main__':
         links = hn.get_links()
         gen.set_items(links)
         rss = gen.get_flux()
-        f = open(FLUX, 'w')
+        f = open("%s/%s" % ("/home/sites/docs.khady.info/htdocs", FLUX), 'w')
         print (rss)
         f.write(rss)
         f.close()
