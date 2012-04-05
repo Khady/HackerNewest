@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 
 DATABASE = "hn.db"
 FLUX = "flux.xml"
+SITE = "http://louisroche.net/docs"
 
 def date_internet(date):
     d = date.strftime('%Y-%m-%dT%H:%M:%S%z')
@@ -48,20 +49,23 @@ class HackerNewest:
         """get all the news links in the page
         """
         soup = BeautifulSoup(self.page)
-        vote = False
+        vote = 0
         infos = []
         for link in soup.find_all('a'):
             l = link['href']
             if l.startswith('vote'):
-                vote = True
-            elif vote == True:
-                infos = [jinja2.Markup.escape(link.string), jinja2.Markup.escape(l), date_internet(datetime.datetime.now())]
+                vote = 1
+            elif vote == 1:
+                infos = [jinja2.Markup.escape(link.string),
+                         jinja2.Markup.escape(l),
+                         date_internet(datetime.datetime.now())]
                 time.sleep(1)
-                vote = False
-            elif l.startswith('item'):
+                vote = 2
+            elif l.startswith('item') and vote == 2:
                 infos.append("%s/%s" % (self.surl, l))
                 infos.append(uuid.uuid3(uuid.NAMESPACE_DNS, infos[1]))
                 self.links.append(infos)
+                vote = 0
         return self.links
 
 class ArchiveLinks:
@@ -80,7 +84,9 @@ class GenAtom:
 
     def set_items(self, links):
         self.rss = self.env.get_template("feedtemplate.xml").render(date=date_internet(datetime.datetime.utcnow()),
-                                                                    items=links)
+                                                                    items=links,
+                                                                    site="%s/%s" % (SITE, FLUX),
+                                                                    uid=uuid.uuid3(uuid.NAMESPACE_DNS, SITE))
 
     def get_flux(self):
         return self.rss
