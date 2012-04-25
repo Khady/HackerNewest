@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>Hacker newest</title>
-    <subtitle>test</subtitle>
+    <subtitle>Every links from the page newest on Hacker news</subtitle>
     <link href="http://news.ycombinator.com/newest"/>
     <link rel="self" type="application/atom+xml"
       href="{{site}}"/>
