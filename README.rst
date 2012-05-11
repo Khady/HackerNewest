@@ -40,6 +40,5 @@ Running
 TODO
 ====
 
-- Split this file into modules
 - Add an option to launch a daemon
 - Use configuration for choose if you want to archive the links and generate the atom feed
